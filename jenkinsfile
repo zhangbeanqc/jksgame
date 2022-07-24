@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+	tools {
+	   maven 'maven3'
+	}
+	stages {
+	   stage('Checkout') {
+	       steps {
+	           git branch: 'development', credentialsId: 'bzgithub', url: 'https://github.com/zhangbeanqc/jksgame.git'
+	       }
+	   } 
+	   stage('Build') {
+	       steps {
+		       sh script: 'mvn clean package'
+		   }
+	   }
+	   stage('Upload') {
+	       steps {
+		        nexusArtifactUploader artifacts: [
+			        [
+				      artifactId: 'jksgame', 
+					  classifier: '', 
+					  file: 'target/jksgame-1.0.0.jar', 
+					  type: 'jar'
+					]
+				], 
+				credentialsId: 'Nexus', 
+				groupId: 'com.bzhang', 
+				nexusUrl: 'localhost:8081', 
+				nexusVersion: 'nexus3', 
+				protocol: 'http', 
+				repository: 'SimpleApp-release', 
+				version: '1.0.0'
+		   }
+	   }
+	}
+}
